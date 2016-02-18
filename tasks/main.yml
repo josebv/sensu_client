@@ -1,0 +1,32 @@
+- name: add sensu repo
+  template:
+    src=sensu.repo.j2
+    dest=/etc/yum.repos.d/sensu.repo
+- name: install sensu
+  yum: name={{item}} state=present
+  with_items:
+  - sensu
+- name: mkdir /etc/sensu/ssl
+  file:
+    path=/etc/sensu/ssl
+    state=directory
+- name: copy key.pem
+  template:
+    src=key.pem
+    dest=/etc/sensu/ssl/key.pem
+- name: copy cert.pem
+  template:
+    src=cert.pem
+    dest=/etc/sensu/ssl/cert.pem
+- name: sensu client config
+  template:
+    src=client.json.j2
+    dest=/etc/sensu/conf.d/client.json
+    owner=root mode=0644
+- name: sensu rabbitmq config
+  template:
+    src=rabbitmq.json.j2
+    dest=/etc/sensu/conf.d/rabbitmq.json
+    owner=root mode=0644
+- name: enable service
+  service: name=sensu-client state=restarted enabled=yes
