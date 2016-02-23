@@ -1,11 +1,32 @@
-- name: add sensu repo
+
+- name: add sensu repo CentOS
+  when: ansible_os_family == 'RedHat'
   template:
     src=sensu.repo.j2
     dest=/etc/yum.repos.d/sensu.repo
-- name: install sensu
+
+- name: install sensu CentOS
+  when: ansible_os_family == 'RedHat'
   yum: name={{item}} state=present
   with_items:
   - sensu
+
+- name: install debian sources key file
+  when: ansible_os_family == 'Debian'
+  shell: "wget -q http://repos.sensuapp.org/apt/pubkey.gpg -O- | sudo apt-key add -"
+
+- name: debian sources
+  when: ansible_os_family == 'Debian'
+  shell: 'echo "deb     http://repos.sensuapp.org/apt sensu main" > /etc/apt/sources.list.d/sensu.list'
+#
+#- name: update apt Debian
+#  apt: name=sensu state=present
+#  when: ansible_os_family == 'Debian'
+
+- name: install sensu Debian
+  apt: name=sensu state=present update_cache=yes
+  when: ansible_os_family == 'Debian'
+
 - name: mkdir /etc/sensu/ssl
   file:
     path=/etc/sensu/ssl
